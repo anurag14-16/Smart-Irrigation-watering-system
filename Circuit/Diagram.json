@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": -28.2, "left": 9, "attrs": {} },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -109.2,
+      "left": 128.6,
+      "attrs": { "color": "cyan" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": -72.85,
+      "left": -19.2,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd1",
+      "top": 256,
+      "left": 312.8,
+      "attrs": { "pins": "i2c" }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot1",
+      "top": 251.7,
+      "left": 145,
+      "rotate": 180,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht1",
+      "top": 247.5,
+      "left": 25.2,
+      "rotate": 180,
+      "attrs": { "temperature": "43.7", "humidity": "57.5" }
+    },
+    { "type": "wokwi-relay-module", "id": "relay1", "top": 192.2, "left": 326.4, "attrs": {} }
+  ],
+  "connections": [
+    [ "uno:5V", "pot1:VCC", "red", [ "v0" ] ],
+    [ "uno:GND.2", "pot1:GND", "black", [ "v19.1", "h3.9" ] ],
+    [ "pot1:SIG", "uno:A0", "green", [ "v-57.6", "h0.4" ] ],
+    [ "dht1:GND", "uno:GND.2", "black", [ "v-38.4", "h144", "v-19.2" ] ],
+    [ "dht1:VCC", "uno:5V", "red", [ "v-57.6", "h96" ] ],
+    [ "dht1:SDA", "uno:7", "green", [ "v-57.6", "h-57.7", "v-230.4", "h201.6" ] ],
+    [ "relay1:VCC", "uno:5V", "red", [ "h-163.2" ] ],
+    [ "relay1:GND", "uno:GND.3", "black", [ "h-124.8", "v-29.2" ] ],
+    [ "relay1:IN", "uno:8", "green", [ "h-38.4", "v-269", "h-105.6" ] ],
+    [ "led1:A", "uno:9", "magenta", [ "v9.6", "h9.6" ] ],
+    [ "r1:1", "led1:C", "cyan", [ "v0", "h-28.8", "v-19.2", "h153.6", "v38.4", "h38.4" ] ],
+    [ "r1:2", "uno:GND.1", "#8f4814", [ "v0", "h37.2", "v19.2", "h48" ] ],
+    [ "lcd1:GND", "uno:GND.3", "black", [ "h-76.8", "v-48", "h-38.4" ] ],
+    [ "lcd1:VCC", "uno:5V", "red", [ "h0" ] ],
+    [ "lcd1:SDA", "uno:A4", "green", [ "h-57.6", "v0.2" ] ],
+    [ "lcd1:SCL", "uno:A5", "green", [ "h-48", "v0.3" ] ]
+  ],
+  "dependencies": {}
+}
