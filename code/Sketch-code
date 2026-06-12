@@ -1,0 +1,96 @@
+#include <DHT.h>
+#include <LiquidCrystal_I2C.h>
+
+#define MOISTURE_PIN  A0
+#define DHT_PIN       7
+#define RELAY_PIN     8
+#define PUMP_LED      9
+#define DHT_TYPE      DHT22
+
+#define DRY_THRESHOLD  600
+#define WET_THRESHOLD  400
+
+DHT dht(DHT_PIN, DHT_TYPE);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+bool pumpState = false;
+
+String getMoistureStatus(int value) {
+    if (value > 600) return "DRY  ";
+    else if (value > 300) return "MOIST";
+    else return "WET  ";
+}
+
+void updateLCD(int moisture, float temp, float humidity, bool pump) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(getMoistureStatus(moisture));
+    lcd.print(" Pump:");
+    lcd.print(pump ? "ON " : "OFF");
+    lcd.setCursor(0, 1);
+    lcd.print("T:");
+    lcd.print((int)temp);
+    lcd.print("C ");
+    lcd.print("H:");
+    lcd.print((int)humidity);
+    lcd.print("%");
+}
+
+void updateSerial(int moisture, float temp, float humidity, bool pump) {
+    Serial.println("---- Irrigation Status ----");
+    Serial.print("Moisture Raw : "); Serial.println(moisture);
+    Serial.print("Moisture     : "); Serial.println(getMoistureStatus(moisture));
+    Serial.print("Temperature  : "); Serial.print(temp); Serial.println(" C");
+    Serial.print("Humidity     : "); Serial.print(humidity); Serial.println(" %");
+    Serial.print("Pump         : "); Serial.println(pump ? "ON" : "OFF");
+    Serial.println("---------------------------");
+}
+
+void setup() {
+    Serial.begin(9600);
+
+    pinMode(RELAY_PIN, OUTPUT);
+    pinMode(PUMP_LED, OUTPUT);
+
+    digitalWrite(RELAY_PIN, HIGH);  // pump OFF initially
+    digitalWrite(PUMP_LED, LOW);    // LED OFF initially
+
+    dht.begin();
+
+    lcd.init();
+    lcd.backlight();
+    lcd.setCursor(0, 0);
+    lcd.print("Smart Irrigation");
+    lcd.setCursor(0, 1);
+    lcd.print("  Initialising  ");
+    delay(2000);
+    lcd.clear();
+}
+
+void loop() {
+    int moistureValue = analogRead(MOISTURE_PIN);
+    float temperature = dht.readTemperature();
+    float humidity    = dht.readHumidity();
+
+    if (isnan(temperature) || isnan(humidity)) {
+        Serial.println("DHT11 read failed — skipping cycle");
+        delay(2000);
+        return;
+    }
+
+    // Hysteresis logic
+    if (moistureValue > DRY_THRESHOLD) {
+        pumpState = true;
+    } else if (moistureValue < WET_THRESHOLD) {
+        pumpState = false;
+    }
+
+    // Control relay and LED together
+    digitalWrite(RELAY_PIN, pumpState ? LOW : HIGH);
+    digitalWrite(PUMP_LED, pumpState ? HIGH : LOW);
+
+    updateLCD(moistureValue, temperature, humidity, pumpState);
+    updateSerial(moistureValue, temperature, humidity, pumpState);
+
+    delay(2000);
+}
